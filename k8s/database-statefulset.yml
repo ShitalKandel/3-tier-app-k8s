@@ -1,23 +1,23 @@
 apiVersion: apps/v1
-kind: Statefulset
+kind: StatefulSet
 metadata: 
   name: postgres-db
 spec: 
   serviceName: "postgres"
   replicas: 1
   selector: 
-    matchLables:
+    matchLabels:
       app: postgres
   template: 
     metadata:
-    labels: 
-      app: postgres
+      labels: 
+        app: postgres
     spec:
       containers:
       - name: postgres
         image: postgres:16-alpine
         ports:
-        - containerPost: 5432
+        - containerPort: 5432
 
 
 ---
@@ -25,7 +25,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name; db-service
+  name: db-service
 spec: 
   selector: 
     app: postgres
