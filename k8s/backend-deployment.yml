@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: backend-deploy
+spec:
+  replicas: 2
+  selector: 
+    matchLables:
+      app: backend
+  template:
+    metadata:
+      lables:
+        app: backend
+    spec:
+      containers:
+      - name: backend-app
+        image: your-dockerhub-username/backned:latest
+        ports:
+        - containerPort: 5000
+        resources: # memory resource to container and pods  required for HPA autoscaling
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        env: 
+        - name: DB_HOST
+          value: "db_service"
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: backend-service
+sepc:
+  selector:
+    app: backend
+  ports:
+  - protocol: TCP
+    port : 80
+    targetPort: 5000
+  type: ClusterIP
