@@ -7,7 +7,7 @@ pipeline {
         GITHUB_REPO_OWNER= 'ShitalKandel'
         GITHUB_REPO_NAME = '3-tier-app-k8s'
         
-        // Discord Webhook URL - Set this up inside Jenkins Global Environment or paste directly
+        // Discord Webhook URL
         DISCORD_WEBHOOK  = 'https://discord.com/api/webhooks/1491988177567744151/I1IO7GeK-avC-XaPkxGkPAOqa7J2cLkbSQDIFeB-Le9EXPK2LgQ-2x-M_heAjbPcvRE3'
         
         // Credentials mapping
@@ -121,30 +121,37 @@ def sendDiscordNotification(String title, String description, String colorHex) {
       }]
     }
     """
-    sh """
-        curl -H "Content-Type: application/json" \
-             -X POST \
-             -d '${jsonPayload}' \
-             ${DISCORD_WEBHOOK}
-    """
+    // Fixed: Wrapped with node to provide missing hudson.FilePath context in post actions
+    node {
+        sh """
+            curl -H "Content-Type: application/json" \
+                 -X POST \
+                 -d '${jsonPayload}' \
+                 ${DISCORD_WEBHOOK}
+        """
+    }
 }
 
 // Helper function to update status directly back to GitHub's UI
 def githubStatus(String state, String description) {
-    def commitSha = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-    def payload = """
-    {
-      "state": "${state}",
-      "target_url": "${env.BUILD_URL}",
-      "description": "${description}",
-      "context": "continuous-integration/jenkins"
+    // Fixed: Wrapped inside node context block so git commands and curl can interact with a workspace
+    node {
+        def commitSha = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+        def payload = """
+        {
+          "state": "${state}",
+          "target_url": "${env.BUILD_URL}",
+          "description": "${description}",
+          "context": "continuous-integration/jenkins"
+        }
+        """
+        sh """
+            curl -s -X POST \
+              -H "Authorization: token ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d '${payload}' \
+              https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/statuses/${commitSha}
+        """
     }
-    """
-    sh """
-        curl -s -X POST \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          -d '${payload}' \
-          https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/statuses/${commitSha}
-    """
 }
+
