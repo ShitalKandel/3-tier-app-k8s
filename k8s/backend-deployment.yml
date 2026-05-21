@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend-app
-        image: shitalkandel/backned:latest
+        image: shitalkandel/backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000

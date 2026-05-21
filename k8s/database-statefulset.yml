@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: StatefulSet
-metadata: 
+metadata:  
   name: postgres-db
-spec: 
+spec:  
   serviceName: "postgres"
   replicas: 1
-  selector: 
+  selector:  
     matchLabels:
       app: postgres
-  template: 
+  template:  
     metadata:
-      labels: 
+      labels:  
         app: postgres
     spec:
       containers:
@@ -18,17 +18,37 @@ spec:
         image: postgres:16-alpine
         ports:
         - containerPort: 5432
+        
+        # 1. Environment variables to initialize the database
+        env:
+        - name: POSTGRES_DB
+          value: "studentdb"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "admin123"  # Change this to match your backend connection string
+          
+        # 2. Mount point inside the container
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
 
+      # 3. Use hostPath for simple, instant directory storage without extra setups
+      volumes:
+      - name: postgres-storage
+        hostPath:
+          path: /var/lib/jenkins/postgres-data
+          type: DirectoryOrCreate
 
 ---
 
 apiVersion: v1
 kind: Service
-metadata: 
+metadata:  
   name: db-service
-spec: 
-  selector: 
+spec:  
+  selector:  
     app: postgres
-  ports: 
+  ports:  
     - protocol: TCP
       port: 5432
