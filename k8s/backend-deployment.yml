@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: backend-app
-        image: your-dockerhub-username/backned:latest
+        image: shitalkandel/backned:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
         resources: # memory resource to container and pods  required for HPA autoscaling

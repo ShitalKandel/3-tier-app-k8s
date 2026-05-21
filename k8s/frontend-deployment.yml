@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: frontend-app
-        image: your-dockerhub-username/frontend:latest
+        image: shitalkandel/frontend:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         resources:
