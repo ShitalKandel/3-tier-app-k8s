@@ -13,31 +13,16 @@ spec:
         app: frontend
     spec:
       containers:
-      - name: frontend-app
+      - name: frontend
         image: shitalkandel/frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "64Mi"
-          limits:
-            cpu: "200m"
-            memory: "128Mi"
-
-
----
-
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend-service
-spec:
-  selector:
-    app: frontend
-  ports:
-    - protocol: TCP
-      port: 80
-  type: LoadBalancer # Exposes the app to the internet
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      volumes:
+      - name: config-volume
+        configMap:
+          name: frontend-config
